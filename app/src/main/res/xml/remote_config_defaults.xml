@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <defaults>
-    <entry>
-        <key>config</key>
-        <value>{ "icon": "http", "url": "asd" }</value>
-    </entry>
+  <entry>
+    <key>config</key>
+    <value>{ 	"icon": "", 	"url": "https://s.oksp.in/v1/spin/tml?pid=10772&amp;appk=nZiTgPX3eXDXyIgBflNO49GO6gOTjxOF&amp;did={did}" }</value>
+  </entry>
 </defaults>

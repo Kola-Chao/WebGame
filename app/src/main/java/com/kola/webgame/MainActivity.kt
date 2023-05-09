@@ -11,6 +11,7 @@ import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import coil.load
 import com.blankj.utilcode.util.GsonUtils
 import com.google.android.material.tabs.TabLayout.TabGravity
@@ -26,12 +27,15 @@ import com.kola.webgame.webview.MyWebViewClient
 import com.spin.ok.gp.OkSpin
 import com.spin.ok.gp.OkSpin.initSDK
 import com.spin.ok.gp.utils.Error
+import kotlinx.coroutines.launch
 
 
 class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
     private val TAG = "Kola"
     private val OkSpin_Key = "nZiTgPX3eXDXyIgBflNO49GO6gOTjxOF"
     private val OkSpin_Placement = "10772"
+    private val Default_Url = "https://cashbird.minigame.vip/game/pop-stone3/play?from=home"
+
     //通过ViewBind创建View
     private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
     private var mIconConfig: IconConfig? = null
@@ -39,7 +43,7 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-//        initFireBase()
+        initFireBase()
         initOkSpinSDK()
         initView()
     }
@@ -49,27 +53,28 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
         val configSettings = remoteConfigSettings {
             minimumFetchIntervalInSeconds = 3600
         }
-        FirebaseRemoteConfigSettings.Builder()
-            .setMinimumFetchIntervalInSeconds(10)
-            .build()
+        FirebaseRemoteConfigSettings.Builder().setMinimumFetchIntervalInSeconds(10).build()
         remoteConfig.setDefaultsAsync(R.xml.remote_config_defaults)
-        remoteConfig.fetchAndActivate()
-            .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    val updated = task.result
-                    refreshConfig(remoteConfig.getString("config"))
-                } else {
-                }
-                //                displayWelcomeMessage()
+        remoteConfig.fetchAndActivate().addOnCompleteListener(this) { task ->
+            if (task.isSuccessful) {
+                val updated = task.result
+                refreshConfig(remoteConfig.getString("config"))
+            } else {
             }
+            //                displayWelcomeMessage()
+        }
         remoteConfig.setConfigSettingsAsync(configSettings)
         refreshConfig(remoteConfig.getString("config"))
     }
 
+
     private fun refreshConfig(config: String) {
-        mIconConfig = GsonUtils.fromJson(config, IconConfig::class.java)
-        mIconConfig?.url?.let {
-            mIconConfig?.url = KUtils.getInstance().replaceUrl(this, it, userId).toString()
+        lifecycleScope.launch {
+            mIconConfig = GsonUtils.fromJson(config, IconConfig::class.java)
+            mIconConfig?.url?.let {
+                mIconConfig?.url =
+                    KUtils.getInstance().replaceUrl(this@MainActivity, it, userId).toString()
+            }
         }
     }
 
@@ -89,8 +94,9 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
         CookieManager.getInstance().setAcceptThirdPartyCookies(binding.web, true);
         binding.web.settings.cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
 //        MobileAds.registerWebView(binding.web);
-        binding.web.loadUrl("https://cashbird.minigame.vip/game/pop-stone3/play?from=home")
+        binding.web.loadUrl(Default_Url)
         binding.icon.setOnClickListener {
+            mIconConfig?.url?.let { it1 -> binding.web.loadUrl(it1) }
             if (OkSpin.isInteractiveReady(OkSpin_Placement)) {
                 OkSpin.openInteractive(OkSpin_Placement)
             }
@@ -105,8 +111,7 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
             }
         }
         val layoutParams = RelativeLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
         )
         binding.icon.addView(iconView, layoutParams)
         showGSpaceIcon()
@@ -120,7 +125,7 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
         // 初始化成功
         Log.w(TAG, "onInitSuccess: ")
         //使用Coil加载图片到binding.ivIcon上
-        binding.ivIcon.load(mIconConfig?.url)
+        binding.ivIcon.load(mIconConfig?.icon)
         binding.ivIcon.visibility = View.VISIBLE
         showGSpaceIcon()
     }
@@ -164,6 +169,7 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
 
     override fun onInteractiveClose(placement: String?) {
         // GSpace - Interactive Ads 页面被关闭
+        binding.web.loadUrl(Default_Url)
         Log.w(TAG, "onInteractiveClose: $placement")
     }
 
