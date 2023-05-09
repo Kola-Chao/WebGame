@@ -2,10 +2,14 @@ package com.kola.webgame.utils
 
 import android.content.Context
 import android.os.Build.VERSION_CODES.P
+import com.blankj.utilcode.util.ThreadUtils
 import com.google.android.gms.ads.identifier.AdvertisingIdClient
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException
 import com.google.android.gms.common.GooglePlayServicesRepairableException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.IOException
+import kotlin.coroutines.suspendCoroutine
 
 class KUtils {
     companion object {
@@ -27,11 +31,11 @@ class KUtils {
      * @param context 上下文
      * @return 设备的 GAID
      */
-    fun getDeviceGaid(context: Context): String? {
+    private fun getDeviceGaid(context: Context): String? {
         var gaid: String? = null
         try {
             val info = AdvertisingIdClient.getAdvertisingIdInfo(context)
-            gaid = info?.id
+            gaid = info.id
         } catch (e: IOException) {
             e.printStackTrace()
         } catch (e: GooglePlayServicesNotAvailableException) {
@@ -42,10 +46,11 @@ class KUtils {
         return gaid
     }
 
-    fun replaceUrl(context: Context, url: String, userUUid: String): String? {
-        return getDeviceGaid(context)?.let {
-            url.replace("{did}", it)
-            url.replace("{user_uuid}", userUUid)
+    suspend fun replaceUrl(context: Context, url: String, userUUid: String): String? {
+        return withContext(Dispatchers.IO) {
+            getDeviceGaid(context)?.let {
+                url.replace("{did}", it)
+            }
         }
     }
 }
