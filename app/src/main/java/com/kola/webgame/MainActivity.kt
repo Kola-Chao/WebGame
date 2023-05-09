@@ -9,8 +9,14 @@ import android.webkit.CookieManager
 import android.webkit.WebSettings
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.tabs.TabLayout.TabGravity
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig
+import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
+import com.google.firebase.remoteconfig.ktx.remoteConfig
+import com.google.firebase.remoteconfig.ktx.remoteConfigSettings
 import com.kola.webgame.databinding.ActivityMainBinding
 import com.kola.webgame.webview.MyWebViewClient
 import com.spin.ok.gp.OkSpin
@@ -28,10 +34,37 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        //全屏屏蔽顶部状态栏和底部虚拟按键
-
+//        initFireBase()
         initSDK()
         initView()
+    }
+
+    private fun initFireBase() {
+        val remoteConfig: FirebaseRemoteConfig = Firebase.remoteConfig
+        val configSettings = remoteConfigSettings {
+            minimumFetchIntervalInSeconds = 3600
+        }
+        FirebaseRemoteConfigSettings.Builder()
+            .setMinimumFetchIntervalInSeconds(10)
+            .build()
+        remoteConfig.setDefaultsAsync(R.xml.remote_config_defaults)
+        remoteConfig.fetchAndActivate()
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    val updated = task.result
+                    Log.d(
+                        TAG,
+                        "Config params updated: $updated config: ${remoteConfig.getString("config")}"
+                    )
+                } else {
+                    Toast.makeText(
+                        this, "Fetch failed",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                //                displayWelcomeMessage()
+            }
+        remoteConfig.setConfigSettingsAsync(configSettings)
     }
 
     private fun initSDK() {
