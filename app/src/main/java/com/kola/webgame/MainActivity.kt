@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        initFireBase()
+//        initFireBase()
         initOkSpinSDK()
         initView()
     }
