@@ -27,14 +27,13 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
     private val TAG = "Kola"
     private val OkSpin_Key = "nZiTgPX3eXDXyIgBflNO49GO6gOTjxOF"
     private val OkSpin_Placement = "10772"
-
     //通过ViewBind创建View
     private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-//        initFireBase()
+        initFireBase()
         initSDK()
         initView()
     }
@@ -85,8 +84,8 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
 //        MobileAds.registerWebView(binding.web);
         binding.web.loadUrl("https://cashbird.minigame.vip/game/pop-stone3/play?from=home")
         binding.icon.setOnClickListener {
-            if (OkSpin.isGSpaceReady(OkSpin_Placement)) {
-                OkSpin.openGSpace(OkSpin_Placement)
+            if (OkSpin.isInteractiveReady(OkSpin_Placement)) {
+                OkSpin.openInteractive(OkSpin_Placement)
             }
         }
     }
@@ -103,6 +102,11 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
             ViewGroup.LayoutParams.MATCH_PARENT
         )
         binding.icon.addView(iconView, layoutParams)
+        showGSpaceIcon()
+    }
+
+    private fun showGSpaceIcon() {
+        binding.icon.visibility = View.VISIBLE
     }
 
     override fun onInitSuccess() {
@@ -123,6 +127,7 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
 
     override fun onIconLoadFailed(placement: String?, error: Error?) {
         // Placement 加载失败
+
         Log.w(TAG, "onIconLoadFailed: $placement error: $error")
     }
 
