@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<defaults>
+    <entry>
+        <key>config</key>
+        <value>{ "icon": "http", "url": "asd" }</value>
+    </entry>
+</defaults>
