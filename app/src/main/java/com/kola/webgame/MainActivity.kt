@@ -12,9 +12,11 @@ import android.widget.RelativeLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import coil.imageLoader
 import coil.load
 import com.blankj.utilcode.util.GsonUtils
 import com.google.android.material.tabs.TabLayout.TabGravity
+import com.google.firebase.ktx.BuildConfig
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
@@ -27,9 +29,10 @@ import com.kola.webgame.webview.MyWebViewClient
 import com.spin.ok.gp.OkSpin
 import com.spin.ok.gp.OkSpin.initSDK
 import com.spin.ok.gp.utils.Error
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
-
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
     private val TAG = "Kola"
     private val OkSpin_Key = "nZiTgPX3eXDXyIgBflNO49GO6gOTjxOF"
@@ -43,7 +46,7 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-//        initFireBase()
+        initFireBase()
         initOkSpinSDK()
         initView()
     }
@@ -51,9 +54,9 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
     private fun initFireBase() {
         val remoteConfig: FirebaseRemoteConfig = Firebase.remoteConfig
         val configSettings = remoteConfigSettings {
-            minimumFetchIntervalInSeconds = 3600
+            minimumFetchIntervalInSeconds = if (com.kola.webgame.BuildConfig.DEBUG) 10 else 3600
         }
-        FirebaseRemoteConfigSettings.Builder().setMinimumFetchIntervalInSeconds(10).build()
+
         remoteConfig.setDefaultsAsync(R.xml.remote_config_defaults)
         remoteConfig.fetchAndActivate().addOnCompleteListener(this) { task ->
             if (task.isSuccessful) {
@@ -69,6 +72,7 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
 
 
     private fun refreshConfig(config: String) {
+        Log.w(TAG, "refreshConfig: $config")
         lifecycleScope.launch {
             mIconConfig = GsonUtils.fromJson(config, IconConfig::class.java)
             mIconConfig?.url?.let {
@@ -123,7 +127,7 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
 
     override fun onInitSuccess() {
         // 初始化成功
-        Log.w(TAG, "onInitSuccess: ")
+        Log.w(TAG, "onInitSuccess: icon:${mIconConfig?.icon}")
         //使用Coil加载图片到binding.ivIcon上
         binding.ivIcon.load(mIconConfig?.icon)
         binding.ivIcon.visibility = View.VISIBLE

@@ -1,7 +1,9 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-//    id 'com.google.gms.google-services'
+    id 'com.google.gms.google-services'
+    id 'kotlin-kapt'
+    id 'com.google.dagger.hilt.android'
 }
 
 android {
@@ -9,7 +11,7 @@ android {
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.kola.webgame"
+        applicationId "com.gamestudiox.popstone"
         minSdk 24
         targetSdk 33
         versionCode 100
@@ -19,21 +21,27 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField "boolean", "DEBUG", "true"
+        }
         release {
+            buildConfigField "boolean", "DEBUG", "false"
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '17'
     }
 
     //使用ViewBind
     buildFeatures {
+        buildConfig true
         viewBinding true
     }
 }
@@ -60,6 +68,14 @@ dependencies {
     implementation 'com.google.firebase:firebase-config-ktx'
     //gson
     implementation 'com.google.code.gson:gson:2.9.0'
+    //hilt
+    implementation "com.google.dagger:hilt-android:2.44"
+    kapt "com.google.dagger:hilt-compiler:2.44"
     //coil
     implementation("io.coil-kt:coil:2.3.0")
+    implementation("io.coil-kt:coil-gif:2.3.0")
+}
+
+kapt {
+    correctErrorTypes true
 }
