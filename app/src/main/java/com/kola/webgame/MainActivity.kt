@@ -11,15 +11,20 @@ import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import coil.load
+import com.blankj.utilcode.util.GsonUtils
 import com.google.android.material.tabs.TabLayout.TabGravity
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
 import com.google.firebase.remoteconfig.ktx.remoteConfig
 import com.google.firebase.remoteconfig.ktx.remoteConfigSettings
+import com.kola.webgame.bean.IconConfig
 import com.kola.webgame.databinding.ActivityMainBinding
+import com.kola.webgame.utils.KUtils
 import com.kola.webgame.webview.MyWebViewClient
 import com.spin.ok.gp.OkSpin
+import com.spin.ok.gp.OkSpin.initSDK
 import com.spin.ok.gp.utils.Error
 
 
@@ -29,12 +34,13 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
     private val OkSpin_Placement = "10772"
     //通过ViewBind创建View
     private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
-
+    private var mIconConfig: IconConfig? = null
+    private val userId = OkSpin.getUserId()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        initFireBase()
-        initSDK()
+//        initFireBase()
+        initOkSpinSDK()
         initView()
     }
 
@@ -51,27 +57,28 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
                     val updated = task.result
-                    Log.d(
-                        TAG,
-                        "Config params updated: $updated config: ${remoteConfig.getString("config")}"
-                    )
+                    refreshConfig(remoteConfig.getString("config"))
                 } else {
-                    Toast.makeText(
-                        this, "Fetch failed",
-                        Toast.LENGTH_SHORT
-                    ).show()
                 }
                 //                displayWelcomeMessage()
             }
         remoteConfig.setConfigSettingsAsync(configSettings)
+        refreshConfig(remoteConfig.getString("config"))
     }
 
-    private fun initSDK() {
+    private fun refreshConfig(config: String) {
+        mIconConfig = GsonUtils.fromJson(config, IconConfig::class.java)
+        mIconConfig?.url?.let {
+            mIconConfig?.url = KUtils.getInstance().replaceUrl(this, it, userId).toString()
+        }
+    }
+
+    private fun initOkSpinSDK() {
         OkSpin.setListener(this)
         if (!OkSpin.isInit()) {
             OkSpin.initSDK(OkSpin_Key)
             OkSpin.loadIcon(OkSpin_Placement)
-            OkSpin.setUserId(OkSpin.getUserId())
+            OkSpin.setUserId(userId)
         }
     }
 
@@ -112,6 +119,10 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
     override fun onInitSuccess() {
         // 初始化成功
         Log.w(TAG, "onInitSuccess: ")
+        //使用Coil加载图片到binding.ivIcon上
+        binding.ivIcon.load(mIconConfig?.url)
+        binding.ivIcon.visibility = View.VISIBLE
+        showGSpaceIcon()
     }
 
     override fun onInitFailed(error: Error?) {
