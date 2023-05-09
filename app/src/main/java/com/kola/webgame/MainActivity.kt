@@ -1,7 +1,9 @@
 package com.kola.webgame
 
+import android.os.Build.VERSION_CODES.S
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.view.ViewGroup
 import android.webkit.CookieManager
 import android.webkit.WebSettings
@@ -26,6 +28,8 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+        //全屏屏蔽顶部状态栏和底部虚拟按键
+
         initSDK()
         initView()
     }

@@ -55,7 +55,7 @@ dependencies {
     //blankjUtils
     implementation 'com.blankj:utilcodex:1.30.6'
     //firebase
-    implementation platform('com.google.firebase:firebase-bom:31.5.0')
+    implementation platform('com.google.firebase:firebase-bom:32.0.0')
     implementation 'com.google.firebase:firebase-analytics-ktx'
     implementation 'com.google.firebase:firebase-config-ktx'
 }
