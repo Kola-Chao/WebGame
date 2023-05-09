@@ -13,10 +13,14 @@ import android.webkit.WebView
 import com.blankj.utilcode.util.Utils
 
 
-class MyWebView(context: Context, attrs: AttributeSet, defStyleAttr: Int) :
-    WebView(context, attrs, defStyleAttr) {
+class MyWebView : WebView {
+    constructor(context: Context, attrs: AttributeSet) : this(context, attrs, 0)
 
-    init {
+    constructor(context: Context, attrs: AttributeSet, defStyle: Int) : super(
+        context,
+        attrs,
+        defStyle
+    ) {
         setJsBridge()
     }
 
@@ -66,7 +70,10 @@ class MyWebView(context: Context, attrs: AttributeSet, defStyleAttr: Int) :
         val context: Context = Utils.getApp()
         val browserIntent = Intent("android.intent.action.VIEW", Uri.parse("https://"))
         val resolveInfo =
-            context.packageManager.resolveActivity(browserIntent, PackageManager.MATCH_DEFAULT_ONLY)
+            context.packageManager.resolveActivity(
+                browserIntent,
+                PackageManager.MATCH_DEFAULT_ONLY
+            )
         if (resolveInfo?.activityInfo != null) {
             packageName = resolveInfo.activityInfo.packageName
         }
