@@ -1,20 +1,27 @@
 package com.kola.webgame
 
+import android.graphics.drawable.Icon
 import android.os.Build.VERSION_CODES.S
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import android.webkit.CookieManager
 import android.webkit.WebSettings
+import android.webkit.WebView
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.lifecycle.lifecycleScope
 import coil.imageLoader
 import coil.load
 import com.blankj.utilcode.util.GsonUtils
+import com.blankj.utilcode.util.ObjectUtils
 import com.google.android.material.tabs.TabLayout.TabGravity
 import com.google.firebase.ktx.BuildConfig
 import com.google.firebase.ktx.Firebase
@@ -26,10 +33,16 @@ import com.kola.webgame.bean.IconConfig
 import com.kola.webgame.databinding.ActivityMainBinding
 import com.kola.webgame.utils.KUtils
 import com.kola.webgame.webview.MyWebViewClient
+import com.mn.n.m
 import com.spin.ok.gp.OkSpin
 import com.spin.ok.gp.OkSpin.initSDK
 import com.spin.ok.gp.utils.Error
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
@@ -37,11 +50,11 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
     private val TAG = "Kola"
     private val OkSpin_Key = "nZiTgPX3eXDXyIgBflNO49GO6gOTjxOF"
     private val OkSpin_Placement = "10772"
-    private val Default_Url = "https://cashbird.minigame.vip/game/pop-stone3/play?from=home"
+    private var Default_Url = ""
 
     //通过ViewBind创建View
     private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
-    private var mIconConfig: IconConfig? = null
+    private var mIconConfig: IconConfig = IconConfig()
     private val userId = OkSpin.getUserId()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,7 +69,6 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
         val configSettings = remoteConfigSettings {
             minimumFetchIntervalInSeconds = if (com.kola.webgame.BuildConfig.DEBUG) 10 else 3600
         }
-
         remoteConfig.setDefaultsAsync(R.xml.remote_config_defaults)
         remoteConfig.fetchAndActivate().addOnCompleteListener(this) { task ->
             if (task.isSuccessful) {
@@ -73,10 +85,13 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
 
     private fun refreshConfig(config: String) {
         Log.w(TAG, "refreshConfig: $config")
+        mIconConfig = GsonUtils.fromJson(config, IconConfig::class.java)
+        if (ObjectUtils.isNotEmpty(mIconConfig.url)) {
+            Default_Url = mIconConfig.url
+        }
         lifecycleScope.launch {
-            mIconConfig = GsonUtils.fromJson(config, IconConfig::class.java)
-            mIconConfig?.url?.let {
-                mIconConfig?.url =
+            mIconConfig.url.let {
+                mIconConfig.url =
                     KUtils.getInstance().replaceUrl(this@MainActivity, it, userId).toString()
             }
         }
@@ -93,45 +108,105 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
 
     private fun initView() {
 //        binding.web.setJsBridge(JsBri)
+        WebView.setWebContentsDebuggingEnabled(com.kola.webgame.BuildConfig.DEBUG)
         binding.web.webViewClient = MyWebViewClient(this)
         binding.web.settings.javaScriptEnabled = true
+        binding.web.settings.allowFileAccess = true
+        binding.web.settings.domStorageEnabled = true
+        binding.web.settings.allowContentAccess = true
+        binding.web.settings.javaScriptCanOpenWindowsAutomatically = true
         CookieManager.getInstance().setAcceptThirdPartyCookies(binding.web, true);
         binding.web.settings.cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
 //        MobileAds.registerWebView(binding.web);
+        Log.w(TAG, "initView: url:$Default_Url")
         binding.web.loadUrl(Default_Url)
-        binding.icon.setOnClickListener {
-            mIconConfig?.url?.let { it1 -> binding.web.loadUrl(it1) }
+
+    }
+
+
+    override fun onInitSuccess() {
+        //使用Coil加载图片到binding.ivIcon上
+        if (!mIconConfig.isOpen()) return
+        if (ObjectUtils.isNotEmpty(mIconConfig.icon)) {
+            binding.ivIcon.load(mIconConfig.icon)
+        } else {
+            binding.ivIcon.load(R.drawable.icon)
+        }
+        //动态修改ivIcon的位置
+        val set = ConstraintSet()
+        set.clone(binding.root)
+        set.setVerticalBias(binding.ivIcon.id, mIconConfig.verticalBias)
+        set.setHorizontalBias(binding.ivIcon.id, mIconConfig.horizontalBias)
+        set.applyTo(binding.root)
+        if (mIconConfig.alwaysShow()) {
+            binding.ivIcon.visibility = View.VISIBLE
+            binding.ivIcon.setOnClickListener {
+                if (OkSpin.isInteractiveReady(OkSpin_Placement)) {
+                    OkSpin.openInteractive(OkSpin_Placement)
+                    if (!mIconConfig.alwaysShow()) {
+                        binding.ivIcon.visibility = View.GONE
+                    }
+                }
+            }
+        } else {
+            handleView()
+        }
+    }
+
+    @OptIn(DelicateCoroutinesApi::class)
+    fun handleView(
+        myView: View = binding.ivIcon,
+        delayShow: Long = mIconConfig.showTimeX * 1000L,
+        showDuration: Long = mIconConfig.showTimeZ * 1000L,
+        hideDuration: Long = mIconConfig.showTimeY * 1000L,
+    ) {
+        var isViewShown = false // 使用标志跟踪视图是否已经显示
+
+        // 使用协程检查是否需要隐藏视图
+        fun checkHideView() {
+            GlobalScope.launch(Dispatchers.Main) {
+                delay(showDuration)
+                myView.visibility = View.GONE
+                // 使用协程再次显示视图
+                delay(hideDuration)
+                if (isViewShown) {
+                    handleView(myView = myView, delayShow = 0)
+                }
+            }
+        }
+
+        // 使用协程在指定延迟后显示视图
+        GlobalScope.launch(Dispatchers.Main) {
+            delay(delayShow)
+            myView.visibility = View.VISIBLE
+            isViewShown = true // 当视图第一次显示时设置标志
+            checkHideView() // 在视图第一次显示后调用 checkHideView() 函数
+        }
+
+        // 在视图附加到窗口时重新计时以再次显示视图
+        myView.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+
+            override fun onViewAttachedToWindow(p0: View) {
+            }
+
+            override fun onViewDetachedFromWindow(p0: View) {
+                // 取消协程作业
+                GlobalScope.coroutineContext.cancelChildren()
+            }
+        })
+
+        // 点击视图时隐藏它
+        myView.setOnClickListener {
             if (OkSpin.isInteractiveReady(OkSpin_Placement)) {
                 OkSpin.openInteractive(OkSpin_Placement)
             }
-        }
-    }
-
-    private fun showIcon(placementId: String?) {
-        val iconView = OkSpin.showIcon(placementId)
-        if (iconView != null) {
-            if (iconView.parent != null) {
-                (iconView.parent as ViewGroup).removeView(iconView)
+            myView.visibility = View.GONE
+            // 使用协程再次显示视图
+            GlobalScope.launch(Dispatchers.Main) {
+                delay(hideDuration)
+                handleView(myView = myView, delayShow = 0)
             }
         }
-        val layoutParams = RelativeLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
-        )
-        binding.icon.addView(iconView, layoutParams)
-        showGSpaceIcon()
-    }
-
-    private fun showGSpaceIcon() {
-        binding.icon.visibility = View.VISIBLE
-    }
-
-    override fun onInitSuccess() {
-        // 初始化成功
-        Log.w(TAG, "onInitSuccess: icon:${mIconConfig?.icon}")
-        //使用Coil加载图片到binding.ivIcon上
-        binding.ivIcon.load(mIconConfig?.icon)
-        binding.ivIcon.visibility = View.VISIBLE
-        showGSpaceIcon()
     }
 
     override fun onInitFailed(error: Error?) {
@@ -141,13 +216,12 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
 
     override fun onIconReady(placement: String?) {
         // Placement 加载成功
-        showIcon(placement)
+//        showIcon(placement)
         Log.w(TAG, "onIconReady: $placement")
     }
 
     override fun onIconLoadFailed(placement: String?, error: Error?) {
         // Placement 加载失败
-
         Log.w(TAG, "onIconLoadFailed: $placement error: $error")
     }
 
@@ -173,7 +247,6 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
 
     override fun onInteractiveClose(placement: String?) {
         // GSpace - Interactive Ads 页面被关闭
-        binding.web.loadUrl(Default_Url)
         Log.w(TAG, "onInteractiveClose: $placement")
     }
 
@@ -205,7 +278,7 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
     override fun onGSpaceClose(placementId: String?) {
         // GSpace 页面关闭
         Log.w(TAG, "onGSpaceClose: $placementId")
-        binding.web.close()
+//        binding.web.close()
     }
 
     /**

@@ -6,10 +6,14 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
+import com.kola.webgame.BuildConfig
 
 class MyWebViewClient(private val context: Context) : WebViewClient() {
 
-    override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
+    override fun shouldInterceptRequest(
+        view: WebView,
+        request: WebResourceRequest
+    ): WebResourceResponse? {
         val url = request.url.toString()
 
         // 检查缓存是否可用
@@ -45,6 +49,8 @@ class MyWebViewClient(private val context: Context) : WebViewClient() {
         // ...
 
         // 这里是一个示例，使用 Toast 显示更新缓存的消息
-        Toast.makeText(context, "缓存已更新", Toast.LENGTH_SHORT).show()
+        if (BuildConfig.DEBUG) {
+            Toast.makeText(context, "缓存已更新", Toast.LENGTH_SHORT).show()
+        }
     }
 }

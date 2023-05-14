@@ -21,3 +21,8 @@
 #-renamesourcefileattribute SourceFile
 
 -keep class com.kola.webgame.bean.**{*;}
+-keep class com.mn.** { *; }
+-keep class com.ks.vny.lqh.n.N {
+    <fields>;
+    <methods>;
+}
