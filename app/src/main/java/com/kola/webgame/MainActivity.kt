@@ -170,7 +170,7 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
                 // 使用协程再次显示视图
                 delay(hideDuration)
                 if (isViewShown) {
-                    handleView(myView = myView)
+                    handleView(myView = myView, delayShow = 0)
                 }
             }
         }
@@ -204,7 +204,7 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
             // 使用协程再次显示视图
             GlobalScope.launch(Dispatchers.Main) {
                 delay(hideDuration)
-                handleView(myView = myView)
+                handleView(myView = myView, delayShow = 0)
             }
         }
     }
