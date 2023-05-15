@@ -51,7 +51,7 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
     private val TAG = "Kola"
     private val OkSpin_Key = "nZiTgPX3eXDXyIgBflNO49GO6gOTjxOF"
     private val OkSpin_Placement = "10772"
-    private var Default_Url = ""
+    private var Default_Url = "https://cart.minigame.vip/game/happypuppy-crush/play"
 
     //通过ViewBind创建View
     private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
@@ -88,8 +88,8 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
         mIconConfig = GsonUtils.fromJson(config, IconConfig::class.java)
         if (ObjectUtils.isNotEmpty(mIconConfig.url)) {
             Default_Url = mIconConfig.url
-            initView()
         }
+        initView()
 //        lifecycleScope.launch {
 //            mIconConfig.url.let {
 //                mIconConfig.url =
