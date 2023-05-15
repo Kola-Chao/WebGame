@@ -11,7 +11,7 @@ android {
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.gamestudiox.popstone"
+        applicationId "com.gamestudiox.happypuppycrush"
         minSdk 24
         targetSdk 33
         versionCode 100

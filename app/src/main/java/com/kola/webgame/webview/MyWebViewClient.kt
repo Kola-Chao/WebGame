@@ -8,7 +8,13 @@ import android.webkit.WebViewClient
 import android.widget.Toast
 import com.kola.webgame.BuildConfig
 
-class MyWebViewClient(private val context: Context) : WebViewClient() {
+class MyWebViewClient(
+    private val context: Context,
+    private val listener: OnPageFinishedListener? = null
+) : WebViewClient() {
+   public interface OnPageFinishedListener {
+        fun onPageFinished(url: String)
+    }
 
     override fun shouldInterceptRequest(
         view: WebView,
@@ -49,6 +55,7 @@ class MyWebViewClient(private val context: Context) : WebViewClient() {
         // ...
 
         // 这里是一个示例，使用 Toast 显示更新缓存的消息
+        listener?.onPageFinished(url)
         if (BuildConfig.DEBUG) {
             Toast.makeText(context, "缓存已更新", Toast.LENGTH_SHORT).show()
         }

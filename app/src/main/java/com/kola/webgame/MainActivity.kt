@@ -23,6 +23,7 @@ import coil.load
 import com.blankj.utilcode.util.GsonUtils
 import com.blankj.utilcode.util.ObjectUtils
 import com.google.android.material.tabs.TabLayout.TabGravity
+import com.google.firebase.FirebaseApp
 import com.google.firebase.ktx.BuildConfig
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
@@ -59,27 +60,26 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-//        initFireBase()
+        initFireBase()
         initOkSpinSDK()
-        initView()
     }
 
     private fun initFireBase() {
+        FirebaseApp.initializeApp(this)
         val remoteConfig: FirebaseRemoteConfig = Firebase.remoteConfig
-        val configSettings = remoteConfigSettings {
-            minimumFetchIntervalInSeconds = if (com.kola.webgame.BuildConfig.DEBUG) 10 else 3600
-        }
         remoteConfig.setDefaultsAsync(R.xml.remote_config_defaults)
-        remoteConfig.fetchAndActivate().addOnCompleteListener(this) { task ->
-            if (task.isSuccessful) {
-                val updated = task.result
-                refreshConfig(remoteConfig.getString("config"))
-            } else {
+        try {
+            val configSettings = remoteConfigSettings {
+                minimumFetchIntervalInSeconds = if (com.kola.webgame.BuildConfig.DEBUG) 10 else 3600
             }
-            //                displayWelcomeMessage()
+            remoteConfig.fetchAndActivate().addOnCompleteListener(this) {
+                refreshConfig(remoteConfig.getString("config"))
+            }
+            remoteConfig.setConfigSettingsAsync(configSettings)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            refreshConfig(remoteConfig.getString("config"))
         }
-        remoteConfig.setConfigSettingsAsync(configSettings)
-        refreshConfig(remoteConfig.getString("config"))
     }
 
 
@@ -88,13 +88,15 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
         mIconConfig = GsonUtils.fromJson(config, IconConfig::class.java)
         if (ObjectUtils.isNotEmpty(mIconConfig.url)) {
             Default_Url = mIconConfig.url
+            initView()
         }
-        lifecycleScope.launch {
-            mIconConfig.url.let {
-                mIconConfig.url =
-                    KUtils.getInstance().replaceUrl(this@MainActivity, it, userId).toString()
-            }
-        }
+//        lifecycleScope.launch {
+//            mIconConfig.url.let {
+//                mIconConfig.url =
+//                    KUtils.getInstance().replaceUrl(this@MainActivity, it, userId).toString()
+//
+//            }
+//        }
     }
 
     private fun initOkSpinSDK() {
@@ -109,7 +111,12 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
     private fun initView() {
 //        binding.web.setJsBridge(JsBri)
         WebView.setWebContentsDebuggingEnabled(com.kola.webgame.BuildConfig.DEBUG)
-        binding.web.webViewClient = MyWebViewClient(this)
+        binding.web.webViewClient =
+            MyWebViewClient(this, object : MyWebViewClient.OnPageFinishedListener {
+                override fun onPageFinished(url: String) {
+                    binding.splash.visibility = View.GONE
+                }
+            })
         binding.web.settings.javaScriptEnabled = true
         binding.web.settings.allowFileAccess = true
         binding.web.settings.domStorageEnabled = true
@@ -120,7 +127,6 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
 //        MobileAds.registerWebView(binding.web);
         Log.w(TAG, "initView: url:$Default_Url")
         binding.web.loadUrl(Default_Url)
-
     }
 
 

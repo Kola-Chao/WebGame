@@ -7,6 +7,35 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:993106097373:android:575a49050d1087a4abd734",
+        "android_client_info": {
+          "package_name": "com.gamestudiox.happypuppycrush"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "993106097373-kajqa775oeuimkmhdeoheo7echnhbpla.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAYn5V77HWv70Cn2UnVI6lYhCn2_FgZXdI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "993106097373-kajqa775oeuimkmhdeoheo7echnhbpla.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:993106097373:android:c21b20cb8e7e8500abd734",
         "android_client_info": {
           "package_name": "com.gamestudiox.popstone"
