@@ -57,9 +57,11 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
     private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
     private var mIconConfig: IconConfig = IconConfig()
     private val userId = OkSpin.getUserId()
+    private val oksSDKReady = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+        initView()
         initFireBase()
         initOkSpinSDK()
     }
@@ -68,6 +70,7 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
         FirebaseApp.initializeApp(this)
         val remoteConfig: FirebaseRemoteConfig = Firebase.remoteConfig
         remoteConfig.setDefaultsAsync(R.xml.remote_config_defaults)
+        refreshConfig(remoteConfig.getString("config"))
         try {
             val configSettings = remoteConfigSettings {
                 minimumFetchIntervalInSeconds = if (com.kola.webgame.BuildConfig.DEBUG) 10 else 3600
@@ -78,18 +81,18 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
             remoteConfig.setConfigSettingsAsync(configSettings)
         } catch (e: Exception) {
             e.printStackTrace()
-            refreshConfig(remoteConfig.getString("config"))
         }
     }
 
 
     private fun refreshConfig(config: String) {
         Log.w(TAG, "refreshConfig: $config")
+        if (ObjectUtils.isEmpty(config)) return
         mIconConfig = GsonUtils.fromJson(config, IconConfig::class.java)
-        if (ObjectUtils.isNotEmpty(mIconConfig.url)) {
-            Default_Url = mIconConfig.url
-        }
-        initView()
+//        if (ObjectUtils.isNotEmpty(mIconConfig.url)) {
+//            Default_Url = mIconConfig.url
+//        }
+//        initView()
 //        lifecycleScope.launch {
 //            mIconConfig.url.let {
 //                mIconConfig.url =
@@ -131,6 +134,10 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
 
 
     override fun onInitSuccess() {
+        refershOKSIcon()
+    }
+
+    private fun refershOKSIcon() {
         //使用Coil加载图片到binding.ivIcon上
         if (!mIconConfig.isOpen()) return
         if (ObjectUtils.isNotEmpty(mIconConfig.icon)) {
