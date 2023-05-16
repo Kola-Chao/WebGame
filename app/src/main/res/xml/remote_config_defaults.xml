@@ -2,6 +2,6 @@
 <defaults>
   <entry>
     <key>config</key>
-    <value>{"icon":"https://firebasestorage.googleapis.com/v0/b/pop-stone.appspot.com/o/gift.gif?alt=media&amp;token=06a522a6-9a84-4fcd-9eac-77323e387ba1","url":"https://cart.minigame.vip/game/happypuppy-crush/play","open":1,"verticalBias":0.9,"horizontalBias":0.85,"showType":2,"showTimeX":40,"showTimeY":120,"showTimeZ":20}</value>
+    <value>{"icon":"","open":1,"verticalBias":0.2,"horizontalBias":0.99,"showType":2,"showTimeX":30,"showTimeY":10,"showTimeZ":999}</value>
   </entry>
 </defaults>

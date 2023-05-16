@@ -2,14 +2,14 @@ package com.kola.webgame.bean
 
 data class IconConfig(
     val icon: String = "",
-    var url: String = "",
-    val open: Int = 0,
-    val verticalBias: Float = 0.85f,
-    val horizontalBias: Float = 0.75f,
-    val showType: Int = 1,
-    val showTimeX: Int = 20,
-    val showTimeY: Int = 120,
-    val showTimeZ: Int = 10
+    val open: Int = 1,
+    val verticalBias: Float = 0.2f,
+    val horizontalBias: Float = 0.99f,
+    val showType: Int = 2,
+    val showTimeX: Int = 30,
+    val showTimeY: Int = 10,
+    val showTimeZ: Int = 999,
+    val isLock: Int = 1,
 ) {
     fun isOpen(): Boolean {
         return open == 1

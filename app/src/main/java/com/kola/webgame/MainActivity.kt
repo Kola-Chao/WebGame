@@ -1,42 +1,27 @@
 package com.kola.webgame
 
-import android.graphics.drawable.Icon
-import android.os.Build.VERSION_CODES.S
+import android.content.pm.ActivityInfo
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.View
-import android.view.ViewGroup
-import android.view.ViewTreeObserver
 import android.webkit.CookieManager
 import android.webkit.WebSettings
 import android.webkit.WebView
-import android.widget.LinearLayout
-import android.widget.RelativeLayout
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintSet
-import androidx.lifecycle.lifecycleScope
-import coil.imageLoader
 import coil.load
 import com.blankj.utilcode.util.GsonUtils
 import com.blankj.utilcode.util.ObjectUtils
-import com.google.android.material.tabs.TabLayout.TabGravity
+import com.blankj.utilcode.util.ToastUtils
 import com.google.firebase.FirebaseApp
-import com.google.firebase.ktx.BuildConfig
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
-import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
 import com.google.firebase.remoteconfig.ktx.remoteConfig
 import com.google.firebase.remoteconfig.ktx.remoteConfigSettings
 import com.kola.webgame.bean.IconConfig
 import com.kola.webgame.databinding.ActivityMainBinding
-import com.kola.webgame.utils.KUtils
 import com.kola.webgame.webview.MyWebViewClient
-import com.mn.n.m
 import com.spin.ok.gp.OkSpin
-import com.spin.ok.gp.OkSpin.initSDK
 import com.spin.ok.gp.utils.Error
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -45,6 +30,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
@@ -57,9 +43,10 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
     private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
     private var mIconConfig: IconConfig = IconConfig()
     private val userId = OkSpin.getUserId()
-    private val oksSDKReady = false
+    private var oksReady = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.w(TAG, "onCreate: ")
         setContentView(binding.root)
         initView()
         initFireBase()
@@ -70,15 +57,15 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
         FirebaseApp.initializeApp(this)
         val remoteConfig: FirebaseRemoteConfig = Firebase.remoteConfig
         remoteConfig.setDefaultsAsync(R.xml.remote_config_defaults)
-        refreshConfig(remoteConfig.getString("config"))
+        val configSettings = remoteConfigSettings {
+            minimumFetchIntervalInSeconds = if (com.kola.webgame.BuildConfig.DEBUG) 10 else 3600
+        }
+        remoteConfig.setConfigSettingsAsync(configSettings)
         try {
-            val configSettings = remoteConfigSettings {
-                minimumFetchIntervalInSeconds = if (com.kola.webgame.BuildConfig.DEBUG) 10 else 3600
-            }
+            refreshConfig(remoteConfig.getString("config"))
             remoteConfig.fetchAndActivate().addOnCompleteListener(this) {
                 refreshConfig(remoteConfig.getString("config"))
             }
-            remoteConfig.setConfigSettingsAsync(configSettings)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -87,8 +74,10 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
 
     private fun refreshConfig(config: String) {
         Log.w(TAG, "refreshConfig: $config")
-        if (ObjectUtils.isEmpty(config)) return
-        mIconConfig = GsonUtils.fromJson(config, IconConfig::class.java)
+        if (ObjectUtils.isNotEmpty(config)) {
+            mIconConfig = GsonUtils.fromJson(config, IconConfig::class.java)
+        }
+        refreshScreenOrientation(mIconConfig.isLock)
 //        if (ObjectUtils.isNotEmpty(mIconConfig.url)) {
 //            Default_Url = mIconConfig.url
 //        }
@@ -134,15 +123,19 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
 
 
     override fun onInitSuccess() {
+        oksReady = true
         refershOKSIcon()
     }
 
     private fun refershOKSIcon() {
+        Log.w(TAG, "refershOKSIcon")
         //使用Coil加载图片到binding.ivIcon上
         if (!mIconConfig.isOpen()) return
         if (ObjectUtils.isNotEmpty(mIconConfig.icon)) {
+            Log.w(TAG, "refershOKSIcon: online icon" + mIconConfig.icon)
             binding.ivIcon.load(mIconConfig.icon)
         } else {
+            Log.w(TAG, "refershOKSIcon: local icon")
             binding.ivIcon.load(R.drawable.icon)
         }
         //动态修改ivIcon的位置
@@ -222,9 +215,21 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
         }
     }
 
+    /**
+     * 根据当前是否竖屏来设置屏幕方向
+     */
+    private fun refreshScreenOrientation(isLock: Int = 1) {
+        if (isLock == 0) return
+        requestedOrientation = if (isLock == 1) {
+            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        } else {
+            ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        }
+    }
+
     override fun onInitFailed(error: Error?) {
         // 初始化失败
-        Log.w(TAG, "onInitFailed: $error")
+        ToastUtils.showShort("onInitFailed: $error")
     }
 
     override fun onIconReady(placement: String?) {
