@@ -2,6 +2,6 @@
 <defaults>
   <entry>
     <key>config</key>
-    <value>{"icon":"","open":1,"verticalBias":0.2,"horizontalBias":0.99,"showType":2,"showTimeX":30,"showTimeY":10,"showTimeZ":999}</value>
+    <value>{"icon":"","open":1,"verticalBias":0.2,"horizontalBias":0.99,"showType":2,"showTimeX":50,"showTimeY":10,"showTimeZ":999}</value>
   </entry>
 </defaults>
