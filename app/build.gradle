@@ -22,10 +22,10 @@ android {
 
     signingConfigs {
         release {
-            storeFile file("..\\happypuppycrush.keystore")
-            storePassword "Happypuppycrush_123"
-            keyAlias "happypuppycrush"
-            keyPassword "Happypuppycrush_123"
+            storeFile file("..\\cashbreak.jks")
+            storePassword "asdfghjkl123"
+            keyAlias "cashbreak"
+            keyPassword "asdfghjkl123"
         }
     }
 
