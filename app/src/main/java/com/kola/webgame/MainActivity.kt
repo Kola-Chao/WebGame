@@ -36,8 +36,8 @@ import kotlinx.coroutines.launch
 class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
     private val TAG = "Kola"
     private val OkSpin_Key = "nZiTgPX3eXDXyIgBflNO49GO6gOTjxOF"
-    private val OkSpin_Placement = "10772"
-    private var Default_Url = "https://cart.minigame.vip/game/happypuppy-crush/play"
+    private val OkSpin_Placement = "10868"
+    private var Default_Url = "https://cart.minigame.vip/game/popstone2/play"
 
     //通过ViewBind创建View
     private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
@@ -62,9 +62,9 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
         }
         remoteConfig.setConfigSettingsAsync(configSettings)
         try {
-            refreshConfig(remoteConfig.getString("config"))
+            refreshConfig(remoteConfig.getString("configPopStone2"))
             remoteConfig.fetchAndActivate().addOnCompleteListener(this) {
-                refreshConfig(remoteConfig.getString("config"))
+                refreshConfig(remoteConfig.getString("configPopStone2"))
             }
         } catch (e: Exception) {
             e.printStackTrace()

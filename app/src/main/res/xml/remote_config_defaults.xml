@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <defaults>
   <entry>
-    <key>config</key>
-    <value>{"icon":"","open":1,"verticalBias":0.2,"horizontalBias":0.99,"showType":2,"showTimeX":50,"showTimeY":10,"showTimeZ":999}</value>
+    <key>configPopStone2</key>
+    <value>{"icon":"","open":1,"verticalBias":0.2,"horizontalBias":0.99,"showType":2,"showTimeX":30,"showTimeY":10,"showTimeZ":999,"isLock":1}</value>
   </entry>
 </defaults>
