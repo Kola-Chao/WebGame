@@ -20,6 +20,15 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        release {
+            storeFile file("..\\cashbreak.jks")
+            storePassword "asdfghjkl123"
+            keyAlias "cashbreak"
+            keyPassword "asdfghjkl123"
+        }
+    }
+
     buildTypes {
         debug {
             buildConfigField "boolean", "DEBUG", "true"
@@ -28,6 +37,8 @@ android {
             buildConfigField "boolean", "DEBUG", "false"
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+
         }
     }
 
@@ -44,6 +55,13 @@ android {
         buildConfig true
         viewBinding true
     }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all {
+            outputFileName = applicationId + "_" + versionCode + "_release.apk"
+        }
+    }
+
 }
 
 dependencies {
