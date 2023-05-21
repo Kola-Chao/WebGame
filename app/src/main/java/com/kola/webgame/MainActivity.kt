@@ -62,9 +62,9 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
         }
         remoteConfig.setConfigSettingsAsync(configSettings)
         try {
-            refreshConfig(remoteConfig.getString("configPopStone2"))
+            refreshConfig(remoteConfig.getString("config"))
             remoteConfig.fetchAndActivate().addOnCompleteListener(this) {
-                refreshConfig(remoteConfig.getString("configPopStone2"))
+                refreshConfig(remoteConfig.getString("config"))
             }
         } catch (e: Exception) {
             e.printStackTrace()
