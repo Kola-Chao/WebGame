@@ -20,9 +20,8 @@ import com.google.firebase.remoteconfig.ktx.remoteConfig
 import com.google.firebase.remoteconfig.ktx.remoteConfigSettings
 import com.kola.webgame.bean.IconConfig
 import com.kola.webgame.databinding.ActivityMainBinding
+import com.kola.webgame.utils.KUtils
 import com.kola.webgame.webview.MyWebViewClient
-import com.spin.ok.gp.OkSpin
-import com.spin.ok.gp.utils.Error
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -33,16 +32,17 @@ import kotlinx.coroutines.launch
 
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
+class MainActivity : AppCompatActivity() {
     private val TAG = "Kola"
     private val OkSpin_Key = "nZiTgPX3eXDXyIgBflNO49GO6gOTjxOF"
     private val OkSpin_Placement = "10868"
     private var Default_Url = "https://cart.minigame.vip/game/popstone2/play"
+    private var OKS_API =
+        "https://s.oksp.in/v1/spin/tml?pid=10772&appk=nZiTgPX3eXDXyIgBflNO49GO6gOTjxOF&did={did}"
 
     //通过ViewBind创建View
     private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
     private var mIconConfig: IconConfig = IconConfig()
-    private val userId = OkSpin.getUserId()
     private var oksReady = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
         setContentView(binding.root)
         initView()
         initFireBase()
-        initOkSpinSDK()
+        refershOKSIcon()
     }
 
     private fun initFireBase() {
@@ -91,15 +91,6 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
 //        }
     }
 
-    private fun initOkSpinSDK() {
-        OkSpin.setListener(this)
-        if (!OkSpin.isInit()) {
-            OkSpin.initSDK(OkSpin_Key)
-            OkSpin.loadIcon(OkSpin_Placement)
-            OkSpin.setUserId(userId)
-        }
-    }
-
     private fun initView() {
 //        binding.web.setJsBridge(JsBri)
         WebView.setWebContentsDebuggingEnabled(com.kola.webgame.BuildConfig.DEBUG)
@@ -119,12 +110,17 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
 //        MobileAds.registerWebView(binding.web);
         Log.w(TAG, "initView: url:$Default_Url")
         binding.web.loadUrl(Default_Url)
-    }
 
 
-    override fun onInitSuccess() {
-        oksReady = true
-        refershOKSIcon()
+        binding.myWeb.webViewClient =
+            MyWebViewClient(this, null)
+        binding.myWeb.settings.javaScriptEnabled = true
+        binding.myWeb.settings.allowFileAccess = true
+        binding.myWeb.settings.domStorageEnabled = true
+        binding.myWeb.settings.allowContentAccess = true
+        binding.myWeb.settings.javaScriptCanOpenWindowsAutomatically = true
+        CookieManager.getInstance().setAcceptThirdPartyCookies(binding.myWeb, true);
+        binding.myWeb.settings.cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
     }
 
     private fun refershOKSIcon() {
@@ -146,16 +142,16 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
         set.applyTo(binding.root)
         if (mIconConfig.alwaysShow()) {
             binding.ivIcon.visibility = View.VISIBLE
-            binding.ivIcon.setOnClickListener {
-                if (OkSpin.isInteractiveReady(OkSpin_Placement)) {
-                    OkSpin.openInteractive(OkSpin_Placement)
-                    if (!mIconConfig.alwaysShow()) {
-                        binding.ivIcon.visibility = View.GONE
-                    }
-                }
-            }
         } else {
             handleView()
+        }
+
+        binding.ivIcon.setOnClickListener {
+            binding.myWeb.loadUrl(KUtils.getInstance().replaceGaid(this, OKS_API))
+            binding.myWeb.visibility = View.VISIBLE
+            if (!mIconConfig.alwaysShow()) {
+                binding.ivIcon.visibility = View.GONE
+            }
         }
     }
 
@@ -203,9 +199,6 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
 
         // 点击视图时隐藏它
         myView.setOnClickListener {
-            if (OkSpin.isInteractiveReady(OkSpin_Placement)) {
-                OkSpin.openInteractive(OkSpin_Placement)
-            }
             myView.visibility = View.GONE
             // 使用协程再次显示视图
             GlobalScope.launch(Dispatchers.Main) {
@@ -227,88 +220,12 @@ class MainActivity : AppCompatActivity(), OkSpin.SpinListener {
         }
     }
 
-    override fun onInitFailed(error: Error?) {
-        // 初始化失败
-        ToastUtils.showShort("onInitFailed: $error")
+    override fun onBackPressed() {
+        //如果当前myWebView可见
+        if (binding.myWeb.visibility == View.VISIBLE) {
+            binding.myWeb.close()
+        } else {
+            super.onBackPressed()
+        }
     }
-
-    override fun onIconReady(placement: String?) {
-        // Placement 加载成功
-//        showIcon(placement)
-        Log.w(TAG, "onIconReady: $placement")
-    }
-
-    override fun onIconLoadFailed(placement: String?, error: Error?) {
-        // Placement 加载失败
-        Log.w(TAG, "onIconLoadFailed: $placement error: $error")
-    }
-
-    override fun onIconShowFailed(placementId: String?, error: Error?) {
-        // Placement 素材展示失败
-        Log.w(TAG, "onIconShowFailed: $placementId error: $error")
-    }
-
-    override fun onIconClick(placement: String?) {
-        // Placement 被点击
-        Log.w(TAG, "onIconClick: $placement")
-    }
-
-    override fun onInteractiveOpen(placement: String?) {
-        // GSpace - Interactive Ads 页面被打开
-        Log.w(TAG, "onInteractiveOpen: $placement")
-    }
-
-    override fun onInteractiveOpenFailed(placementId: String?, error: Error?) {
-        // GSpace - Interactive Ads 页面打开失败
-        Log.w(TAG, "onInteractiveOpenFailed: $placementId error: $error")
-    }
-
-    override fun onInteractiveClose(placement: String?) {
-        // GSpace - Interactive Ads 页面被关闭
-        Log.w(TAG, "onInteractiveClose: $placement")
-    }
-
-    override fun onOfferWallOpen(placementId: String?) {
-        // GSpace - Interactive Wall 页面被打开
-        Log.w(TAG, "onOfferWallOpen: $placementId")
-    }
-
-    override fun onOfferWallOpenFailed(placementId: String?, error: Error?) {
-        // GSpace - Interactive Wall 页面打开失败
-        Log.w(TAG, "onOfferWallOpenFailed: $placementId error: $error")
-    }
-
-    override fun onOfferWallClose(placementId: String?) {
-        // GSpace - Interactive Wall 页面关闭
-        Log.w(TAG, "onOfferWallClose: $placementId")
-    }
-
-    override fun onGSpaceOpen(placementId: String?) {
-        // GSpace 页面打开
-        Log.w(TAG, "onGSpaceOpen: $placementId")
-    }
-
-    override fun onGSpaceOpenFailed(placementId: String?, error: Error?) {
-        // GSpace 页面打开失败
-        Log.w(TAG, "onGSpaceOpenFailed: $placementId error: $error")
-    }
-
-    override fun onGSpaceClose(placementId: String?) {
-        // GSpace 页面关闭
-        Log.w(TAG, "onGSpaceClose: $placementId")
-//        binding.web.close()
-    }
-
-    /**
-     * 用户交互行为回调
-     * INTERACTIVE_PLAY         GSpace - Interactive Ads 页面互动
-     * INTERACTIVE_CLICK        GSpace - Interactive Ads 页面点击广告
-     * OFFER_WALL_SHOW_DETAIL   GSpace - Interactive Wall 页面展示Offer详情
-     * OFFER_WALL_GET_TASK      GSpace - Interactive Wall 页面领取Offer
-     */
-    override fun onUserInteraction(placementId: String?, interaction: String?) {
-        Log.w(TAG, "onUserInteraction: $placementId interaction: $interaction")
-    }
-
-
 }

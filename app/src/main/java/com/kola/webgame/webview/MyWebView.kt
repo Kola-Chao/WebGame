@@ -27,7 +27,7 @@ class MyWebView : WebView {
     //向webview注入自定义JavascriptInterface
     //请将您传入的自定义NAMESPACE发送给OkSpin进行配置
     private fun setJsBridge() {
-        this.addJavascriptInterface(this, "YOUR_NAMESPACE")
+        this.addJavascriptInterface(this, "PopStone")
     }
 
     @JavascriptInterface
@@ -55,7 +55,8 @@ class MyWebView : WebView {
     //点击互动广告关闭按钮时调用该方法。
     @JavascriptInterface
     fun close() {
-        //TODO  close the ad page or activity.
+        //关闭当前页面
+        visibility = GONE
     }
 
     private fun isHw(): Boolean {
