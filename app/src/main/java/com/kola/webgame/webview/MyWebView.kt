@@ -11,6 +11,7 @@ import android.util.AttributeSet
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import com.blankj.utilcode.util.Utils
+import com.kola.webgame.BuildConfig
 
 
 class MyWebView : WebView {
@@ -27,7 +28,7 @@ class MyWebView : WebView {
     //向webview注入自定义JavascriptInterface
     //请将您传入的自定义NAMESPACE发送给OkSpin进行配置
     private fun setJsBridge() {
-        this.addJavascriptInterface(this, "PopStone")
+        this.addJavascriptInterface(this, BuildConfig.H5NameSpace)
     }
 
     @JavascriptInterface

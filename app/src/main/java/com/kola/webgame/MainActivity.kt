@@ -12,7 +12,6 @@ import androidx.constraintlayout.widget.ConstraintSet
 import coil.load
 import com.blankj.utilcode.util.GsonUtils
 import com.blankj.utilcode.util.ObjectUtils
-import com.blankj.utilcode.util.ToastUtils
 import com.google.firebase.FirebaseApp
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
@@ -34,11 +33,6 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private val TAG = "Kola"
-    private val OkSpin_Key = "nZiTgPX3eXDXyIgBflNO49GO6gOTjxOF"
-    private val OkSpin_Placement = "10868"
-    private var Default_Url = "https://cart.minigame.vip/game/popstone2/play"
-    private var OKS_API =
-        "https://s.oksp.in/v1/spin/tml?pid=10772&appk=nZiTgPX3eXDXyIgBflNO49GO6gOTjxOF&did={did}"
 
     //通过ViewBind创建View
     private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
@@ -108,8 +102,8 @@ class MainActivity : AppCompatActivity() {
         CookieManager.getInstance().setAcceptThirdPartyCookies(binding.web, true);
         binding.web.settings.cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
 //        MobileAds.registerWebView(binding.web);
-        Log.w(TAG, "initView: url:$Default_Url")
-        binding.web.loadUrl(Default_Url)
+        Log.w(TAG, "initView: url:${BuildConfig.DefaultUrl}")
+        binding.web.loadUrl(BuildConfig.DefaultUrl)
 
 
         binding.myWeb.webViewClient =
@@ -147,7 +141,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.ivIcon.setOnClickListener {
-            binding.myWeb.loadUrl(KUtils.getInstance().replaceGaid(this, OKS_API))
+            binding.myWeb.loadUrl(
+                KUtils.getInstance().replaceGaid(this, BuildConfig.DefaultOksUrl)
+            )
             binding.myWeb.visibility = View.VISIBLE
             if (!mIconConfig.alwaysShow()) {
                 binding.ivIcon.visibility = View.GONE

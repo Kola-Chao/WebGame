@@ -1,21 +1,26 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'com.google.gms.google-services'
     id 'kotlin-kapt'
     id 'com.google.dagger.hilt.android'
+    id 'com.google.gms.google-services'
 }
+
+//如果当前的productFlavors不是app就引入firebase插件
+//if (android.productFlavors.get('happyPuppy') != null) {
+//    apply plugin: 'com.google.gms.google-services'
+//}
 
 android {
     namespace 'com.kola.webgame'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.gamestudiox.popstone"
+        applicationId "com.gamestudiox.main"
         minSdk 24
         targetSdk 33
-        versionCode 100
-        versionName "1.0.0"
+        versionCode 101
+        versionName "1.0.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -26,6 +31,34 @@ android {
             storePassword "asdfghjkl123"
             keyAlias "cashbreak"
             keyPassword "asdfghjkl123"
+        }
+    }
+    flavorDimensions "version"
+
+    productFlavors {
+        app {
+            dimension "version"
+        }
+
+        popStone {
+            dimension "version"
+            applicationId "com.gamestudiox.popstone"
+            versionCode 101
+            versionName "1.0.1"
+            buildConfigField "String", "H5NameSpace", "\"PopStone\""
+            buildConfigField "String", "DefaultUrl", "\"https://cart.minigame.vip/game/popstone2/play\""
+            buildConfigField "String", "DefaultOksUrl", "\"https://s.oksp.in/v1/spin/tml?pid=10772&appk=nZiTgPX3eXDXyIgBflNO49GO6gOTjxOF&did={did}\""
+        }
+
+        happyPuppy {
+            dimension "version"
+            applicationId "com.gamestudiox.happypuppycrush"
+            versionCode 101
+            versionName "1.0.1"
+            buildConfigField "String", "H5NameSpace", "\"HappyPuppy\""
+            buildConfigField "String", "DefaultUrl", "\"https://cart.minigame.vip/game/happypuppy-crush/play\""
+            buildConfigField "String", "DefaultOksUrl", "\"https://s.oksp.in/v1/spin/tml?pid=10771&appk=SY0etlY44HvpWXP9yV6Q0nMOMBVtEw1N&did={did}\""
+
         }
     }
 
@@ -39,6 +72,17 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
 
+        }
+    }
+
+    sourceSets {
+        popStone {
+            java.srcDirs = ['src/popStone/java']
+            res.srcDirs = ['src/popStone/res']
+        }
+        happyPuppy {
+            java.srcDirs = ['src/happyPuppy/java']
+            res.srcDirs = ['src/happyPuppy/res']
         }
     }
 
