@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<defaults>
+  <entry>
+    <key>config</key>
+    <value>{"icon":"https://firebasestorage.googleapis.com/v0/b/pop-stone.appspot.com/o/gift.gif?alt=media&amp;token=06a522a6-9a84-4fcd-9eac-77323e387ba1","hd_url":"https://s.oksp.in/v1/spin/tml?pid=10772&amp;appk=nZiTgPX3eXDXyIgBflNO49GO6gOTjxOF&amp;did={did}","open":1,"verticalBias":0.2,"horizontalBias":0.99,"showType":2,"showTimeX":30,"showTimeY":10,"showTimeZ":999,"isLock":1}</value>
+  </entry>
+</defaults>

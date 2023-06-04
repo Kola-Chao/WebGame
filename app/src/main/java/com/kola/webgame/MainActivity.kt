@@ -142,7 +142,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.ivIcon.setOnClickListener {
             binding.myWeb.loadUrl(
-                KUtils.getInstance().replaceGaid(this, BuildConfig.DefaultOksUrl)
+                KUtils.getInstance().replaceGaid(this, mIconConfig.hd_url)
             )
             binding.myWeb.visibility = View.VISIBLE
             if (!mIconConfig.alwaysShow()) {

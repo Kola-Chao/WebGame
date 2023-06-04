@@ -4,6 +4,7 @@ plugins {
     id 'kotlin-kapt'
     id 'com.google.dagger.hilt.android'
     id 'com.google.gms.google-services'
+    id 'com.google.firebase.crashlytics'
 }
 
 //如果当前的productFlavors不是app就引入firebase插件
@@ -126,6 +127,7 @@ dependencies {
     implementation platform('com.google.firebase:firebase-bom:32.0.0')
     implementation 'com.google.firebase:firebase-analytics-ktx'
     implementation 'com.google.firebase:firebase-config-ktx'
+    implementation 'com.google.firebase:firebase-crashlytics-ktx'
     //gson
     implementation 'com.google.code.gson:gson:2.9.0'
     //hilt
