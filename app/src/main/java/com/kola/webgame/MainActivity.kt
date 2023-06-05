@@ -136,19 +136,20 @@ class MainActivity : AppCompatActivity() {
         set.applyTo(binding.root)
         if (mIconConfig.alwaysShow()) {
             binding.ivIcon.visibility = View.VISIBLE
+            binding.ivIcon.setOnClickListener {
+                binding.myWeb.loadUrl(
+                    KUtils.getInstance().replaceGaid(this, mIconConfig.hd_url)
+                )
+                binding.myWeb.visibility = View.VISIBLE
+                if (!mIconConfig.alwaysShow()) {
+                    binding.ivIcon.visibility = View.GONE
+                }
+            }
         } else {
             handleView()
         }
 
-        binding.ivIcon.setOnClickListener {
-            binding.myWeb.loadUrl(
-                KUtils.getInstance().replaceGaid(this, mIconConfig.hd_url)
-            )
-            binding.myWeb.visibility = View.VISIBLE
-            if (!mIconConfig.alwaysShow()) {
-                binding.ivIcon.visibility = View.GONE
-            }
-        }
+
     }
 
     @OptIn(DelicateCoroutinesApi::class)
@@ -195,6 +196,10 @@ class MainActivity : AppCompatActivity() {
 
         // 点击视图时隐藏它
         myView.setOnClickListener {
+            binding.myWeb.loadUrl(
+                KUtils.getInstance().replaceGaid(this, mIconConfig.hd_url)
+            )
+            binding.myWeb.visibility = View.VISIBLE
             myView.visibility = View.GONE
             // 使用协程再次显示视图
             GlobalScope.launch(Dispatchers.Main) {
