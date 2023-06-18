@@ -20,7 +20,7 @@ class App : Application(), ImageLoaderFactory {
         super.onCreate()
         Utils.init(this)
         com.mn.sdk.init(this, "fc5ka7dm2ladincj")
-        com.ks.vny.lqh.e.a(this)
+//        com.ks.vny.lqh.e.a(this)
         KUtils.getInstance().getDeviceGaid(this)
         //如果发生了全局未捕获的异常，可以在这里捕获
         Thread.setDefaultUncaughtExceptionHandler { t, e ->

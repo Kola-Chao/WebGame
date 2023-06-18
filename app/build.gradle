@@ -33,6 +33,18 @@ android {
             keyAlias "cashbreak"
             keyPassword "asdfghjkl123"
         }
+        popStone {
+            storeFile file("..\\popstone.keystore")
+            storePassword "Popstone_123"
+            keyAlias "popstone"
+            keyPassword "Popstone_123"
+        }
+        happyPuppy {
+            storeFile file("..\\happypuppycrush.keystore")
+            storePassword "Happypuppycrush_123"
+            keyAlias "happypuppycrush"
+            keyPassword "Happypuppycrush_123"
+        }
     }
     flavorDimensions "version"
 
@@ -46,6 +58,7 @@ android {
             applicationId "com.gamestudiox.popstone"
             versionCode 130
             versionName "1.3.0"
+            signingConfig signingConfigs.popStone
             buildConfigField "String", "H5NameSpace", "\"PopStone\""
             buildConfigField "String", "DefaultUrl", "\"https://cart.minigame.vip/game/popstone2/play\""
             buildConfigField "String", "DefaultOksUrl", "\"https://s.oksp.in/v1/spin/tml?pid=10772&appk=nZiTgPX3eXDXyIgBflNO49GO6gOTjxOF&did={did}\""
@@ -56,6 +69,7 @@ android {
             applicationId "com.gamestudiox.happypuppycrush"
             versionCode 130
             versionName "1.3.0"
+            signingConfig signingConfigs.happyPuppy
             buildConfigField "String", "H5NameSpace", "\"HappyPuppy\""
             buildConfigField "String", "DefaultUrl", "\"https://cart.minigame.vip/game/happypuppy-crush/play\""
             buildConfigField "String", "DefaultOksUrl", "\"https://s.oksp.in/v1/spin/tml?pid=10771&appk=SY0etlY44HvpWXP9yV6Q0nMOMBVtEw1N&did={did}\""
@@ -72,7 +86,6 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.release
 
         }
     }
