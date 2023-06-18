@@ -38,27 +38,53 @@ class MainActivity : AppCompatActivity() {
     private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
     private var mIconConfig: IconConfig = IconConfig()
     private var oksReady = false
+    private var retryCount = 0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.w(TAG, "onCreate: ")
         setContentView(binding.root)
         initView()
         initFireBase()
-        refershOKSIcon()
+//        refershOKSIcon()
+        refreshScreenOrientation()
     }
 
     private fun initFireBase() {
         FirebaseApp.initializeApp(this)
         val remoteConfig: FirebaseRemoteConfig = Firebase.remoteConfig
-        remoteConfig.setDefaultsAsync(R.xml.remote_config_defaults)
+//        remoteConfig.setDefaultsAsync(R.xml.remote_config_defaults)
         val configSettings = remoteConfigSettings {
             minimumFetchIntervalInSeconds = if (com.kola.webgame.BuildConfig.DEBUG) 10 else 3600
         }
         remoteConfig.setConfigSettingsAsync(configSettings)
+        refreshFireBase(remoteConfig)
+    }
+
+    @OptIn(DelicateCoroutinesApi::class)
+    private fun refreshFireBase(remoteConfig: FirebaseRemoteConfig) {
         try {
-            refreshConfig(remoteConfig.getString("config"))
+            //            refreshConfig(remoteConfig.getString("config"))
             remoteConfig.fetchAndActivate().addOnCompleteListener(this) {
-                refreshConfig(remoteConfig.getString("config"))
+                //判断是否成功请求到了配置
+                if (it.isSuccessful) {
+                    Log.w(TAG, "refreshFireBase: success")
+                    refreshConfig(remoteConfig.getString("config"))
+                } else {
+                    Log.w(TAG, "refreshFireBase: fail")
+                    //间隔3s后重新请求，如果共请求了3次都失败后就不再请求
+                    GlobalScope.launch(Dispatchers.Main) {
+                        delay(3000)
+                        if (retryCount < 2) {
+                            refreshFireBase(remoteConfig)
+                            retryCount++
+                        } else {
+                            mIconConfig.open = 1
+                            refershOKSIcon()
+                            it.exception?.printStackTrace()
+                        }
+                    }
+                }
+
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -66,27 +92,16 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private fun refreshConfig(config: String) {
+    private fun refreshConfig(config: String?) {
         Log.w(TAG, "refreshConfig: $config")
         if (ObjectUtils.isNotEmpty(config)) {
             mIconConfig = GsonUtils.fromJson(config, IconConfig::class.java)
         }
+        refershOKSIcon()
         refreshScreenOrientation(mIconConfig.isLock)
-//        if (ObjectUtils.isNotEmpty(mIconConfig.url)) {
-//            Default_Url = mIconConfig.url
-//        }
-//        initView()
-//        lifecycleScope.launch {
-//            mIconConfig.url.let {
-//                mIconConfig.url =
-//                    KUtils.getInstance().replaceUrl(this@MainActivity, it, userId).toString()
-//
-//            }
-//        }
     }
 
     private fun initView() {
-//        binding.web.setJsBridge(JsBri)
         WebView.setWebContentsDebuggingEnabled(com.kola.webgame.BuildConfig.DEBUG)
         binding.web.webViewClient =
             MyWebViewClient(this, object : MyWebViewClient.OnPageFinishedListener {

@@ -44,8 +44,8 @@ android {
         popStone {
             dimension "version"
             applicationId "com.gamestudiox.popstone"
-            versionCode 101
-            versionName "1.0.1"
+            versionCode 130
+            versionName "1.3.0"
             buildConfigField "String", "H5NameSpace", "\"PopStone\""
             buildConfigField "String", "DefaultUrl", "\"https://cart.minigame.vip/game/popstone2/play\""
             buildConfigField "String", "DefaultOksUrl", "\"https://s.oksp.in/v1/spin/tml?pid=10772&appk=nZiTgPX3eXDXyIgBflNO49GO6gOTjxOF&did={did}\""
@@ -54,8 +54,8 @@ android {
         happyPuppy {
             dimension "version"
             applicationId "com.gamestudiox.happypuppycrush"
-            versionCode 101
-            versionName "1.0.1"
+            versionCode 130
+            versionName "1.3.0"
             buildConfigField "String", "H5NameSpace", "\"HappyPuppy\""
             buildConfigField "String", "DefaultUrl", "\"https://cart.minigame.vip/game/happypuppy-crush/play\""
             buildConfigField "String", "DefaultOksUrl", "\"https://s.oksp.in/v1/spin/tml?pid=10771&appk=SY0etlY44HvpWXP9yV6Q0nMOMBVtEw1N&did={did}\""
